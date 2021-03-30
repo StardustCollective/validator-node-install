@@ -37,7 +37,7 @@ Also, if you have a p12 file you would like to use from a molly wallet, please m
 ### 2. Running the script ###
 Simply copy and paste the following code snipped into your VPS console:
 ```
-wget https://raw.githubusercontent.com/zaemliss/Constellation/master/dag -O /usr/local/bin/dag && chmod +x /usr/local/bin/dag && dag
+wget https://raw.githubusercontent.com/StardustCollective/validator-node-install/master/dag -O /usr/local/bin/dag && chmod +x /usr/local/bin/dag && dag
 ```
 ___
 
@@ -56,7 +56,7 @@ You may want to secure your node with a firewall and fail2ban (IPS&Bruteforce de
 The following script automatically installs and secures your VPS
 (Tested on Ubuntu machines only. Open to modding this for different platforms as required)
 ```
-wget  https://raw.githubusercontent.com/zaemliss/Constellation/master/config-security -O ~/config-security && chmod +x ~/config-security && ~/config-security
+wget  https://raw.githubusercontent.com/StardustCollective/validator-node-install/master/config-security -O ~/config-security && chmod +x ~/config-security && ~/config-security
 ```
 
 You will also need to manually set up an ufw firewall rule for port 9002 (in order to view your node in the browser)
@@ -69,7 +69,7 @@ ___
 # For debugging ONLY #
 This will overwrite the default logback.xml so that the org.constellation logging level is set to `debug` instead of `warn`.
 ```
-wget https://raw.githubusercontent.com/zaemliss/Constellation/master/logback.xml -O ~/constellation/logback.xml
+wget https://raw.githubusercontent.com/StardustCollective/validator-node-install/master/logback.xml -O ~/constellation/logback.xml
 ```
 # TESTNET INSTRUCTIONS: #
 # >>>>> IMPORTANT: This is __NOT__ compatible with Docker Images!!! If you've installed your node with a Docker Image, this script can break your installation. <<<<< #
@@ -88,6 +88,6 @@ or
 # UTILITIES #
 checkCluster
 ```
-wget https://raw.githubusercontent.com/zaemliss/Constellation/master/checkCluster -O /usr/local/bin/checkCluster && chmod +x /usr/local/bin/checkCluster
+wget https://raw.githubusercontent.com/StardustCollective/validator-node-install/master/checkCluster -O /usr/local/bin/checkCluster && chmod +x /usr/local/bin/checkCluster
 ```
 usage: checkCluster [ip_address]
