@@ -652,7 +652,7 @@ function doInstall()
                    exit 1
                 fi
 
-                firstIP=$(curl -s $LB:9000/cluster/info | jq -r 'sort_by(.ip.host)[] | .ip.host' | head -n 1)
+                firstIP=$(curl -s $LB:9000/cluster/info | jq -r '.[] | with_entries(select(.ip.status="Ready")) | .ip.host' | sort -uR | head -n 1)
                 if [[ ${#firstIP} -gt 8 ]]; then
                   export GENESIS=$firstIP
                 else
