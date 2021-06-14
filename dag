@@ -13,7 +13,7 @@ yel='\033[1;33m'
 blu='\033[1;36m'
 pnk='\033[1;35m'
 clr='\033[0m'
-DAG_VERSION="3.68"
+DAG_VERSION="3.69"
 export updver=$2
 
 function checkDir()
