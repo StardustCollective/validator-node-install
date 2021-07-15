@@ -7,17 +7,17 @@ yel='\033[1;33m'
 blu='\033[1;36m'
 clr='\033[0m'
 pnk='\033[1;35m'
-VERSION="1.23"
+VERSION="1.24"
 function checkVersion()
 {
-        webVer=$(curl -s https://raw.githubusercontent.com/zaemliss/Constellation/master/checkCluster | grep "VERSION=" | head -1 | tr -d '"' | tr '=' ' ' | awk '{print $2}')
+        webVer=$(curl -s https://github.com/StardustCollective/validator-node-install/master/checkCluster | grep "VERSION=" | head -1 | tr -d '"' | tr '=' ' ' | awk '{print $2}')
         if [[ "$webVer" != "$VERSION" ]]; then
                 echo
                 echo -e "${grn} New version available! (${pnk}$webVer${grn})"
                 echo -e "${clr}"
                 read -e -p " Press Y then [ENTER] to update or N to cancel: " CHOICE
                 if [[ ("$CHOICE" == "y" || "$CHOICE" == "Y") ]]; then
-                        wget https://raw.githubusercontent.com/zaemliss/Constellation/master/checkCluster -O /usr/local/bin/checkCluster >/dev/null 2>&1
+                        wget https://github.com/StardustCollective/validator-node-install/checkCluster -O /usr/local/bin/checkCluster >/dev/null 2>&1
                         echo -e "${grn} checkCluster ${blu}utility updated${clr}"
                         echo
                         exit 1
@@ -26,14 +26,18 @@ function checkVersion()
 }
 checkVersion
 
+errorsOnly=-1
+
 isTestnet=$(echo $@ | grep -c -- "--testnet")
+errorsOnly=$(echo $@ | grep -c -- "--errors")
+
 if [[ $isTestnet = 1 ]]; then
   LB="http://cl-lb-alb-testnet-1216020584.us-west-1.elb.amazonaws.com"
 else
   LB="http://lb.constellationnetwork.io"
 fi
 
-if [[ ! -z $1 ]] && [[ $1 != "--testnet" ]]; then
+if [[ ! -z $1 ]] && [[ $1 != "--testnet" ]] && [[ $1 != "--errors" ]]; then
   nodes=$1
   inCluster=$(curl -s -m 3 $LB:9000/cluster/info | jq .[].ip.host | grep -c $1)
   echo
@@ -53,56 +57,74 @@ else
 fi
 
 count=0
+
 echo
 for item in $nodes
 do
+  hasError=-1
   count=$((count+1))
-  echo -e "${red}$count ${yel}$item${blu}"
-  aliasName=$(curl -s $item:9000/metrics | jq -r .metrics.alias)
-  echo -e "${blu}Alias     : ${grn}$aliasName${clr}"
+  nodenum="${red}$count ${yel}$item${blu}"
+  getAlias=$(curl -s $item:9000/metrics | jq -r .metrics.alias)
+  nodeAlias="${blu}Alias     : ${grn}$getAlias${clr}"
   nc -z -v -w1 $item 9000 > /dev/null 2>&1;
+
   if [[ $? = 1 ]]; then
-    echo -e "${blu}Port 9000 : ${red}closed!${clr}"
+    p9000="${blu}Port 9000 : ${red}closed!${clr}"
+    hasError=1
   else
-    echo -e "${blu}Port 9000 : ${grn}open${clr}"
+    p9000="${blu}Port 9000 : ${grn}open${clr}"
   fi
   
   nc -z -v -w1 $item 9001 > /dev/null 2>&1;
   if [[ $? = 1 ]]; then
-    echo -e "${blu}Port 9001 : ${red}closed!${clr}"
+    p9001="${blu}Port 9001 : ${red}closed!${clr}"
+    hasError=1
   else
-    echo -e "${blu}Port 9001 : ${grn}open${clr}"
+    p9001="${blu}Port 9001 : ${grn}open${clr}"
   fi
   nc -z -v -w1 $item 9002 > /dev/null 2>&1;
   if [[ $? = 0 ]]; then
-    echo -e "${blu}Port 9002 : ${red}open!${clr}"
+    p9002="${blu}Port 9002 : ${red}open!${clr}"
+    hasError=1
   else
-    echo -e "${blu}Port 9002 : ${grn}closed${clr}"
+    p9002="${blu}Port 9002 : ${grn}closed${clr}"
   fi
   nc -z -v -w1 $item 9003 > /dev/null 2>&1;
   if [[ $? = 1 ]]; then
-    echo -e "${blu}Port 9003 : ${red}closed!${clr}"
+    p9003="${blu}Port 9003 : ${red}closed!${clr}"
+    hasError=1
   else
-    echo -e "${blu}Port 9003 : ${grn}open${clr}"
+    p9003="${blu}Port 9003 : ${grn}open${clr}"
   fi
   
   nc -z -v -w1 $item 22 > /dev/null 2>&1;
   if [[ $? = 1 ]]; then
-    echo -e "${blu}Port 22   : ${grn}closed${clr}"
+    p22="${blu}Port 22   : ${grn}closed${clr}"
   else
-    echo -e "${blu}Port 22   : ${pnk}open${clr}"
+    p22="${blu}Port 22   : ${pnk}open${clr}"
   fi
    
   
   nodeVersion=$(curl -s -m 3 http://$item:9000/metrics | jq .[].version | tr -d '"')
-  echo -e "${blu}Version   : ${grn}$nodeVersion${clr}"
+  nodeVer="${blu}Version   : ${grn}$nodeVersion${clr}"
   nodeState=$(curl -s -m 3 http://$item:9000/metrics | jq .[].nodeState | tr -d '"')
   nStatus=$(echo $nodeState  | grep -c Ready)
   if [ $nStatus -gt 0 ]; then
-    echo -e "${blu}Status    : ${grn}Node State is Ready${clr}"
+    status="${blu}Status    : ${grn}Node State is Ready${clr}"
   else
-    echo -e "${blu}Status    : ${yel}$nodeState${clr}"
+    status="${blu}Status    : ${yel}$nodeState${clr}"
   fi
-    
-  echo -e "${clr}"
+
+  if [[ errorsOnly -eq 1 && hasError -eq 1 ]] || [[ errorsOnly -ne 1 ]]; then
+    echo -e $nodenum
+    echo -e $nodeAlias
+    echo -e $p9000
+    echo -e $p9001
+    echo -e $p9002
+    echo -e $p9003
+    echo -e $p22
+    echo -e $nodeVer
+    echo -e $status
+    echo -e "${clr}"
+  fi
 done
