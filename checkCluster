@@ -7,17 +7,17 @@ yel='\033[1;33m'
 blu='\033[1;36m'
 clr='\033[0m'
 pnk='\033[1;35m'
-VERSION="1.24"
+VERSION="1.25"
 function checkVersion()
 {
-        webVer=$(curl -s https://github.com/StardustCollective/validator-node-install/master/checkCluster | grep "VERSION=" | head -1 | tr -d '"' | tr '=' ' ' | awk '{print $2}')
+        webVer=$(curl -s https://raw.githubusercontent.com/StardustCollective/validator-node-install/master/checkCluster | grep "VERSION=" | head -1 | tr -d '"' | tr '=' ' ' | awk '{print $2}')
         if [[ "$webVer" != "$VERSION" ]]; then
                 echo
                 echo -e "${grn} New version available! (${pnk}$webVer${grn})"
                 echo -e "${clr}"
                 read -e -p " Press Y then [ENTER] to update or N to cancel: " CHOICE
                 if [[ ("$CHOICE" == "y" || "$CHOICE" == "Y") ]]; then
-                        wget https://github.com/StardustCollective/validator-node-install/checkCluster -O /usr/local/bin/checkCluster >/dev/null 2>&1
+                        wget https://raw.githubusercontent.com/StardustCollective/validator-node-install/master/checkCluster -O /usr/local/bin/checkCluster >/dev/null 2>&1
                         echo -e "${grn} checkCluster ${blu}utility updated${clr}"
                         echo
                         exit 1
