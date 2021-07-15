@@ -13,7 +13,7 @@ yel='\033[1;33m'
 blu='\033[1;36m'
 pnk='\033[1;35m'
 clr='\033[0m'
-DAG_VERSION="3.69"
+DAG_VERSION="3.70"
 export updver=$2
 
 function checkDir()
@@ -298,6 +298,29 @@ function showStatus()
         fi
         diskFree=$(df -Pk $dagDir | sed 1d | grep -v used | awk '{ print $4 "\t" }')
         dfFormated=$(df -Pkh $dagDir | sed 1d | grep -v used | awk '{ print $4 "\t" }')
+        
+        pMem=$(echo $(grep MemTotal /proc/meminfo | awk '{print $2}') / 1024 | bc)
+        sMem=$(echo $(grep swapfile /proc/swaps | awk '{print $3}') / 1024 | bc)
+        numProc=$(grep -c ^processor /proc/cpuinfo)
+
+        if [[ $pMem -lt 7500 ]]; then
+                echo -e "${blu} Physical RAM           : ${red}$pMem${clr} M"
+        else
+                echo -e "${blu} Physical RAM           : ${grn}$pMem${clr} M"
+        fi
+
+        if [[ $sMem -lt 7500 ]]; then
+                echo -e "${blu} Sawp RAM               : ${red}$sMem${clr} M"
+        else
+                echo -e "${blu} Swap RAM               : ${grn}$sMem${clr} M"
+        fi
+
+        if [[ $numProc -lt 4 ]]; then
+                echo -e "${blu} Processors             : ${red}$numProc${clr} M"
+        else
+                echo -e "${blu} Processors             : ${grn}$numProc${clr} M"
+        fi
+        
         if [[ $diskFree -lt 1000000 ]]; then
                 echo -e "${blu} Free Disk Space        : ${red}$dfFormated${clr}"
                 echo -e "${blu}                          ${red}Your node will stop if it can't write to disk!${clr}"
